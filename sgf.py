@@ -1,3 +1,5 @@
+import sys
+
 class SGFParseError(Exception):
     pass
 
@@ -79,11 +81,15 @@ class SGF(object):
         self._expect('[')
         value = []
         while self.data[self.pos] != ']':
-            value.append(self._pop())
+            char = self._pop()
+            if char == '\\':
+                value.append(self._pop())
+            else:
+                value.append(char)
         self._expect(']')
         return ''.join(value)
 
-data = open("game.sgf", "rt").read()
+data = open(sys.argv[1], "rt").read()
 sgf = SGF(data)
 sgf.parse()
 
