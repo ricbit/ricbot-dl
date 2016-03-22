@@ -30,10 +30,9 @@ class SGF(object):
             self._gametree()
 
     def _gametree(self):
-        if self.data[self.pos] != '(':
+        if self._pop() != '(':
             print "Expecting (" 
             raise SGFParseError()
-        self.pos += 1
         self._ignore_space()
         self._sequence()
         self._ignore_space()
@@ -56,8 +55,11 @@ class SGF(object):
         self._ignore_space()
         node = {}
         while self.data[self.pos] not in ";)":
-            k, v = self._property()
-            node[k] = v
+            key, value = self._property()
+            if key in node:
+                print "Duplicate property"
+                raise SGFParseError()
+            node[key] = value
         print node
 
     def _property(self):
@@ -72,19 +74,19 @@ class SGF(object):
     def _propident(self):
         ident = []
         while self.data[self.pos].isalpha():
-            ident.append(self.data[self.pos])
-            self.pos += 1
+            ident.append(self._pop())
         return ''.join(ident)
 
     def _propvalue(self):
-        if self.data[self.pos] != '[':
+        if self._pop() != '[':
             print "Expecting ["
             raise SGFParseError()
-        self.pos += 1
         value = []
         while self.data[self.pos] != ']':
             value.append(self._pop())
-        self.pos += 1
+        if self._pop() != ']':
+            print "Expecting ]"
+            raise SGFParseError()
         return ''.join(value)
 
 data = open("game.sgf", "rt").read()
