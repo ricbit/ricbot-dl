@@ -54,7 +54,7 @@ class SGF(object):
         self._expect(';')
         self._ignore_space()
         node = {}
-        while self.data[self.pos] not in ";)":
+        while self.data[self.pos] not in ";)(":
             key, value = self._property()
             if key in node:
                 print "Duplicate property"
