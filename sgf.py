@@ -18,6 +18,11 @@ class SGF(object):
         self.pos += 1
         return value
 
+    def _expect(self, value):
+        if self._pop() != value:
+            print "Expecting " + value
+            raise SGFParseError()
+
     def _ignore_space(self):
         while self.pos < len(self.data) and ord(self.data[self.pos]) <= 32:
             self.pos += 1
@@ -30,28 +35,21 @@ class SGF(object):
             self._gametree()
 
     def _gametree(self):
-        if self._pop() != '(':
-            print "Expecting (" 
-            raise SGFParseError()
+        self._expect('(')
         self._ignore_space()
         self._sequence()
         self._ignore_space()
         while self.data[self.pos] == '(':
             self._gametree()
             self._ignore_space()
-        if self.data[self.pos] != ')':
-            print "Expecting )"
-            raise SGFParseError()
-        self.pos += 1
+        self._expect(')')
 
     def _sequence(self):
         while self.data[self.pos] == ';':
             self._node()
 
     def _node(self):
-        if self._pop() != ';':
-            print "Expecting ;"
-            raise SGFParseError()
+        self._expect(';')
         self._ignore_space()
         node = {}
         while self.data[self.pos] not in ";)":
@@ -78,15 +76,11 @@ class SGF(object):
         return ''.join(ident)
 
     def _propvalue(self):
-        if self._pop() != '[':
-            print "Expecting ["
-            raise SGFParseError()
+        self._expect('[')
         value = []
         while self.data[self.pos] != ']':
             value.append(self._pop())
-        if self._pop() != ']':
-            print "Expecting ]"
-            raise SGFParseError()
+        self._expect(']')
         return ''.join(value)
 
 data = open("game.sgf", "rt").read()
