@@ -1,5 +1,12 @@
 import sys
 
+class GameTree(object):
+    def __init__(self):
+        self.sequence = []
+        self.variations = []
+    def __repr__(self):
+        return "GameTree(%s, %s)" % (str(self.sequence), str(self.variations))
+
 class SGFParseError(Exception):
     pass
 
@@ -9,11 +16,7 @@ class SGF(object):
         self.pos = 0
 
     def parse(self):
-        try:
-            self._collection()
-            return True
-        except SGFParseError:
-            return False
+        return self._collection()
 
     def _pop(self):
         value = self.data[self.pos]
@@ -30,25 +33,31 @@ class SGF(object):
             self.pos += 1
 
     def _collection(self):
+        collection = []
         while True:
             self._ignore_space()
             if self.pos == len(self.data):
-                return
-            self._gametree()
+                break
+            collection.append(self._gametree())
+        return collection
 
     def _gametree(self):
+        gametree = GameTree()
         self._expect('(')
         self._ignore_space()
-        self._sequence()
+        gametree.sequence.append(self._sequence())
         self._ignore_space()
         while self.data[self.pos] == '(':
-            self._gametree()
+            gametree.variations.append(self._gametree())
             self._ignore_space()
         self._expect(')')
+        return gametree
 
     def _sequence(self):
+        sequence = []
         while self.data[self.pos] == ';':
-            self._node()
+            sequence.append(self._node())
+        return sequence
 
     def _node(self):
         self._expect(';')
@@ -60,7 +69,7 @@ class SGF(object):
                 print "Duplicate property"
                 raise SGFParseError()
             node[key] = value
-        print node
+        return node
 
     def _property(self):
         prop = self._propident()
@@ -91,5 +100,5 @@ class SGF(object):
 
 data = open(sys.argv[1], "rt").read()
 sgf = SGF(data)
-sgf.parse()
+print sgf.parse()
 
