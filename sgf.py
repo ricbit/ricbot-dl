@@ -10,6 +10,7 @@ class GameTree(object):
 class SGFParseError(Exception):
     pass
 
+# Based on the EBNF from http://www.red-bean.com/sgf/sgf4.html
 class SGF(object):
     def __init__(self, data):
         self.data = data
