@@ -4,13 +4,19 @@ class GameTree(object):
     def __init__(self, sequence=[], variations=[]):
         self.sequence = sequence
         self.variations = variations
-        self.pos = 0
+        self.pos = 1
+        self._prior = [['.'] * 19 for _ in xrange(19)]
     def __repr__(self):
         return "GameTree(%s, %s)" % (str(self.sequence), str(self.variations))
     def reset(self):
-        self.pos = 0
+        self.pos = 1
     def next(self):
+        if self.get():
+            color, x, y = self.get()
+            self._prior[y][x] = color
         self.pos += 1
+    def prior(self):
+        return self._prior
     def get(self):
         if 'B' in self.sequence[self.pos]:
             return self._parse('B', self.sequence[self.pos]['B'][0])
