@@ -1,11 +1,27 @@
 import sys
 
 class GameTree(object):
-    def __init__(self):
-        self.sequence = []
-        self.variations = []
+    def __init__(self, sequence=[], variations=[]):
+        self.sequence = sequence
+        self.variations = variations
+        self.pos = 0
     def __repr__(self):
         return "GameTree(%s, %s)" % (str(self.sequence), str(self.variations))
+    def reset(self):
+        self.pos = 0
+    def next(self):
+        self.pos += 1
+    def get(self):
+        if 'B' in self.sequence[self.pos]:
+            return self._parse('B', self.sequence[self.pos]['B'][0])
+        elif 'W' in self.sequence[self.pos]:
+            return self._parse('W', self.sequence[self.pos]['W'][0])
+        else:
+            return None
+    def _parse(self, color, coords):
+        return (color, self._convert(coords[0]), self._convert(coords[1]))
+    def _convert(self, letter):
+        return ord(letter) - ord('a')
 
 class SGFParseError(Exception):
     def __init__(self, error):
@@ -43,16 +59,16 @@ class SGF(object):
         return collection
 
     def _gametree(self):
-        gametree = GameTree()
         self._expect('(')
         self._ignore_space()
-        gametree.sequence.append(self._sequence())
+        sequence = self._sequence()
         self._ignore_space()
+        variations = []
         while self.data[self.pos] == '(':
-            gametree.variations.append(self._gametree())
+            variations.append(self._gametree())
             self._ignore_space()
         self._expect(')')
-        return gametree
+        return GameTree(sequence, variations)
 
     def _sequence(self):
         sequence = []
