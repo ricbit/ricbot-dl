@@ -8,7 +8,8 @@ class GameTree(object):
         return "GameTree(%s, %s)" % (str(self.sequence), str(self.variations))
 
 class SGFParseError(Exception):
-    pass
+    def __init__(self, error):
+        self.error = error
 
 # Based on the EBNF from http://www.red-bean.com/sgf/sgf4.html
 class SGF(object):
@@ -26,8 +27,7 @@ class SGF(object):
 
     def _expect(self, value):
         if self._pop() != value:
-            print "Expecting " + value
-            raise SGFParseError()
+            raise SGFParseError("Expecting " + value)
 
     def _ignore_space(self):
         while self.pos < len(self.data) and ord(self.data[self.pos]) <= 32:
@@ -67,8 +67,7 @@ class SGF(object):
         while self.data[self.pos] not in ";)(":
             key, value = self._property()
             if key in node:
-                print "Duplicate property"
-                raise SGFParseError()
+                raise SGFParseError("Duplicate property " + key)
             node[key] = value
         return node
 
@@ -99,7 +98,8 @@ class SGF(object):
         self._expect(']')
         return ''.join(value)
 
-data = open(sys.argv[1], "rt").read()
-sgf = SGF(data)
-print sgf.parse()
+if __name__ == '__main__':
+    data = open(sys.argv[1], "rt").read()
+    sgf = SGF(data)
+    print sgf.parse()
 
